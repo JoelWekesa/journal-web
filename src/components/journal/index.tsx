@@ -1,19 +1,20 @@
 'use client';
-
 import editFormAtom from '@/atoms/edit_form';
 import journalAtom from '@/atoms/journal';
 import newFormAtom from '@/atoms/new_form';
 import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
 import journalEntries from '@/data/journal-entries';
 import {AnimatePresence, motion} from 'framer-motion';
+import Fuse from 'fuse.js';
 import {useAtom} from 'jotai';
-import {BookOpen, Plus, Search, X} from 'lucide-react';
-import {useEffect, useState} from 'react';
+import {BookOpen, Plus, Search} from 'lucide-react';
+import {useQueryState} from 'nuqs';
+import {useMemo, useState} from 'react';
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from '../ui/dialog';
 import AddJournalForm from './add';
 import EditJournalForm from './edit';
 import JournalEntryComponent from './entry';
+import SearchComponent from './search';
 
 type JournalEntry = {
 	id: string;
@@ -26,8 +27,6 @@ type JournalEntry = {
 
 const JournalManagement = () => {
 	const [entries, setEntries] = useState<JournalEntry[]>(journalEntries);
-	const [filteredEntries, setFilteredEntries] = useState<JournalEntry[]>(entries);
-	const [searchQuery, setSearchQuery] = useState('');
 	const [isSearching, setIsSearching] = useState(false);
 
 	const [isEditDialogOpen, setIsEditDialogOpen] = useAtom(editFormAtom);
@@ -35,21 +34,24 @@ const JournalManagement = () => {
 	const [__, setEditingEntry] = useAtom(journalAtom);
 	const [showNewEntryForm, setShowNewEntryForm] = useAtom(newFormAtom);
 
-	useEffect(() => {
-		if (searchQuery.trim() === '') {
-			setFilteredEntries(entries);
-		} else {
-			const lowercasedQuery = searchQuery.toLowerCase();
-			setFilteredEntries(
-				entries.filter(
-					(entry) =>
-						entry.title.toLowerCase().includes(lowercasedQuery) ||
-						entry.content.toLowerCase().includes(lowercasedQuery) ||
-						entry.category.toLowerCase().includes(lowercasedQuery)
-				)
-			);
-		}
-	}, [searchQuery, entries]);
+	const [search, setSearchQuery] = useQueryState('search', {defaultValue: ''});
+
+	const fuse = useMemo(
+		() =>
+			new Fuse(entries, {
+				keys: [
+					{name: 'title', weight: 0.7},
+					{name: 'content', weight: 0.3},
+					{name: 'category', weight: 0.5},
+				],
+			}),
+		[entries]
+	);
+
+	const filtered = useMemo(() => {
+		if (!search) return entries;
+		return fuse.search(search).map((result) => result.item);
+	}, [search, fuse, entries]);
 
 	const handleDeleteEntry = (id: string) => {
 		setEntries(entries.filter((entry) => entry.id !== id));
@@ -84,31 +86,7 @@ const JournalManagement = () => {
 
 				{entries.length > 1 && (
 					<motion.div initial={{opacity: 0, y: -10}} animate={{opacity: 1, y: 0}} className='flex justify-center mb-8 gap-3'>
-						<AnimatePresence mode='wait'>
-							{isSearching ? (
-								<motion.div
-									initial={{width: 0, opacity: 0}}
-									animate={{width: '100%', opacity: 1}}
-									exit={{width: 0, opacity: 0}}
-									className='relative max-w-md w-full'>
-									<Input
-										type='text'
-										placeholder='Search journal entries...'
-										value={searchQuery}
-										onChange={(e) => setSearchQuery(e.target.value)}
-										className='pr-10 shadow-sm border-primary/20 focus-visible:ring-primary'
-										autoFocus
-									/>
-									<Button
-										size='icon'
-										variant='ghost'
-										onClick={() => setSearchQuery('')}
-										className='absolute right-0 top-0 h-full aspect-square text-muted-foreground hover:text-foreground'>
-										{searchQuery ? <X className='h-4 w-4' /> : <Search className='h-4 w-4' />}
-									</Button>
-								</motion.div>
-							) : null}
-						</AnimatePresence>
+						<AnimatePresence mode='wait'>{isSearching ? <SearchComponent /> : null}</AnimatePresence>
 
 						<div className='flex gap-2'>
 							{entries.length > 1 && (
@@ -203,7 +181,7 @@ const JournalManagement = () => {
 							</p>
 							<Button onClick={() => setShowNewEntryForm(true)}>Create First Entry</Button>
 						</div>
-					) : filteredEntries.length === 0 ? (
+					) : filtered.length === 0 ? (
 						<motion.div
 							initial={{opacity: 0}}
 							animate={{opacity: 1}}
@@ -212,7 +190,9 @@ const JournalManagement = () => {
 								<Search className='h-8 w-8 text-muted-foreground' />
 							</div>
 							<h3 className='text-xl font-medium mb-2'>No matching entries</h3>
-							<p className='text-muted-foreground max-w-md mx-auto mb-6'>We could not find any journal entries matching.</p>
+							<p className='text-muted-foreground max-w-md mx-auto mb-6'>
+								We could not find any journal entries matching &quot;{search}&quot;
+							</p>
 							<Button variant='outline' onClick={() => setSearchQuery('')}>
 								Clear Search
 							</Button>
@@ -229,7 +209,7 @@ const JournalManagement = () => {
 								},
 							}}>
 							<AnimatePresence>
-								{filteredEntries.map((entry, index) => (
+								{filtered.map((entry, index) => (
 									<motion.div
 										key={entry.id}
 										initial={{opacity: 0, y: 20}}
