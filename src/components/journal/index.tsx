@@ -15,6 +15,8 @@ import AddJournalForm from './add';
 import EditJournalForm from './edit';
 import JournalEntryComponent from './entry';
 import SearchComponent from './search';
+import {useSession} from 'next-auth/react';
+import {Avatar, AvatarFallback, AvatarImage} from '@radix-ui/react-avatar';
 
 type JournalEntry = {
 	id: string;
@@ -26,6 +28,10 @@ type JournalEntry = {
 };
 
 const JournalManagement = () => {
+	const {data: session} = useSession({
+		required: true,
+	});
+
 	const [entries, setEntries] = useState<JournalEntry[]>(journalEntries);
 	const [isSearching, setIsSearching] = useState(false);
 
@@ -74,10 +80,13 @@ const JournalManagement = () => {
 			<div className='container mx-auto py-10 px-4 max-w-5xl'>
 				<div className='text-center mb-12'>
 					<div className='inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4'>
-						<BookOpen className='h-8 w-8 text-primary' />
+						<Avatar className='h-8 w-8'>
+							<AvatarImage src={session?.user?.image || ''} alt='@shadcn' />
+							<AvatarFallback>{session?.user?.email?.slice(0, 1).toUpperCase()}</AvatarFallback>
+						</Avatar>
 					</div>
 					<h1 className='text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 text-transparent bg-clip-text'>
-						My Journal
+						Journal
 					</h1>
 					<p className='text-muted-foreground max-w-md mx-auto'>
 						Capture your thoughts, memories, and inspirations in one beautiful place

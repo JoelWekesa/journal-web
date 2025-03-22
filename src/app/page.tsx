@@ -1,8 +1,9 @@
-import JournalManagement from '@/components/journal';
-import React from 'react';
+import {redirect} from 'next/navigation';
 
-const Journal = () => {
-	return <JournalManagement />;
+const Home = async () => {
+	redirect('/journals');
+
+	return null;
 };
 
-export default Journal;
+export default Home;

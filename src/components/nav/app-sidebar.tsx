@@ -15,7 +15,7 @@ import {
 	IconReport,
 	IconSearch,
 	IconSettings,
-	IconUsers
+	IconUsers,
 } from '@tabler/icons-react';
 import * as React from 'react';
 
@@ -28,10 +28,11 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from '../ui/sidebar';
-import { NavDocuments } from './nav-documents';
-import { NavMain } from './nav-main';
-import { NavSecondary } from './nav-secondary';
-import { NavUser } from './nav-user';
+import {NavDocuments} from './nav-documents';
+import {NavMain} from './nav-main';
+import {NavSecondary} from './nav-secondary';
+import {NavUser} from './nav-user';
+import {useSession} from 'next-auth/react';
 
 const data = {
 	user: {
@@ -151,6 +152,10 @@ const data = {
 };
 
 export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
+	const {data: session} = useSession();
+
+	const user = session?.user;
+
 	return (
 		<Sidebar collapsible='offcanvas' {...props}>
 			<SidebarHeader>
@@ -171,7 +176,13 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
 				<NavSecondary items={data.navSecondary} className='mt-auto' />
 			</SidebarContent>
 			<SidebarFooter>
-				<NavUser user={data.user} />
+				<NavUser
+					user={{
+						name: user?.name || '',
+						email: user?.email || '',
+						avatar: user?.image || '',
+					}}
+				/>
 			</SidebarFooter>
 		</Sidebar>
 	);
