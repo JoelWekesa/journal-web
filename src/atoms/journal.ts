@@ -1,12 +1,6 @@
-export interface Journal {
-    id: string;
-    title: string;
-    content: string;
-    category: string;
-    date: Date;
-    color?: string;
-};
 
+
+import { Journal } from "@/models/journal";
 import { atom } from "jotai";
 
 const journalAtom = atom<Journal | null>(null)

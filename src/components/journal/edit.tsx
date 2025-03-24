@@ -1,39 +1,40 @@
 'use client';
+import editFormAtom from '@/atoms/edit_form';
 import journalAtom from '@/atoms/journal';
 import {cn} from '@/lib/utils';
+import {useEditJournal} from '@/services/journals/edit';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {format} from 'date-fns';
 import {useAtom} from 'jotai';
-import {CalendarIcon, Check, ChevronsUpDown} from 'lucide-react';
+import {Check, ChevronsUpDown} from 'lucide-react';
+import {FC, useEffect} from 'react';
 import {useForm} from 'react-hook-form';
 import {z} from 'zod';
 import {Button} from '../ui/button';
-import {Calendar} from '../ui/calendar';
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from '../ui/command';
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '../ui/form';
 import {Input} from '../ui/input';
 import {Popover, PopoverContent, PopoverTrigger} from '../ui/popover';
 import {Textarea} from '../ui/textarea';
-import {useEffect} from 'react';
 
 const categories = ['Personal', 'Work', 'Travel', 'Health', 'Cooking', 'Nature', 'Learning'];
 
 const validationSchema = z.object({
 	title: z.string().nonempty(),
-	category: z.string().nonempty(),
-	date: z.date(),
+	categoryId: z.string().nonempty(),
 	content: z.string().nonempty(),
 });
 
-const EditJournalForm = () => {
+const EditJournalForm: FC<{token: string}> = ({token}) => {
 	const [journal] = useAtom(journalAtom);
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const [_, setIsEditDialogOpen] = useAtom(editFormAtom);
 
 	const form = useForm<z.infer<typeof validationSchema>>({
 		resolver: zodResolver(validationSchema),
 		defaultValues: {
-			date: journal?.date || new Date(),
 			title: journal?.title || '',
-			category: journal?.category || '',
+			categoryId: journal?.categoryId || '',
 			content: journal?.content || '',
 		},
 	});
@@ -55,9 +56,23 @@ const EditJournalForm = () => {
 		};
 	}, []);
 
+	const successFn = () => {
+		setIsEditDialogOpen(false);
+	};
+
+	const {mutate: edit} = useEditJournal({successFn});
+
+	const handleSubmit = (data: z.infer<typeof validationSchema>) => {
+		edit({
+			...data,
+			token,
+			id: journal?.id as string,
+		});
+	};
+
 	return (
 		<Form {...form}>
-			<form className='flex flex-col gap-2'>
+			<form className='flex flex-col gap-2' onSubmit={form.handleSubmit(handleSubmit)}>
 				<FormField
 					name='title'
 					control={form.control}
@@ -77,91 +92,54 @@ const EditJournalForm = () => {
 					)}
 				/>
 
-				<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-					<FormField
-						control={form.control}
-						name='category'
-						render={({field}) => (
-							<FormItem className='flex flex-col'>
-								<FormLabel className='block mb-2'>Select Category</FormLabel>
-								<Popover>
-									<PopoverTrigger asChild>
-										<FormControl>
-											<Button
-												variant='outline'
-												role='combobox'
-												className={cn(
-													'w-full justify-between border-primary/20 focus-visible:ring-primary focus-visible:ring-2 focus-visible:ring-offset-2 bg-transparent',
-													!field.value && 'text-muted-foreground'
-												)}>
-												{field.value ? categories.find((cat) => cat === field.value) : 'Select Category'}
-												<ChevronsUpDown className='opacity-50' />
-											</Button>
-										</FormControl>
-									</PopoverTrigger>
-									<PopoverContent className='w-[200px] md:w-[400px] p-0'>
-										<Command>
-											<CommandInput placeholder='Search category...' className='h-9' />
-											<CommandList>
-												<CommandEmpty>No category found.</CommandEmpty>
-												<CommandGroup>
-													{categories.map((cat) => (
-														<CommandItem
-															value={cat}
-															key={cat}
-															onSelect={() => {
-																form.setValue('category', cat);
-																// Fill form with selected prospect data
-															}}>
-															{cat}
-															<Check className={cn('ml-auto', cat === field.value ? 'opacity-100' : 'opacity-0')} />
-														</CommandItem>
-													))}
-												</CommandGroup>
-											</CommandList>
-										</Command>
-									</PopoverContent>
-								</Popover>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-
-					<FormField
-						control={form.control}
-						name='date'
-						render={({field}) => (
-							<FormItem className='flex flex-col gap-2'>
-								<FormLabel className='block mb-2'>Date</FormLabel>
-								<Popover>
-									<PopoverTrigger asChild>
-										<FormControl>
-											<Button
-												variant={'outline'}
-												className={cn(
-													'w-full pl-3 text-left font-normal border-primary/20 focus-visible:ring-primary focus-visible:ring-2 focus-visible:ring-offset-2 bg-transparent',
-													!field.value && 'text-muted-foreground'
-												)}>
-												{field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
-												<CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
-											</Button>
-										</FormControl>
-									</PopoverTrigger>
-									<PopoverContent className='w-auto p-0' align='start'>
-										<Calendar
-											mode='single'
-											selected={field.value}
-											onSelect={field.onChange}
-											disabled={(date) => date < new Date()}
-											initialFocus
-										/>
-									</PopoverContent>
-								</Popover>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-				</div>
+				<FormField
+					control={form.control}
+					name='categoryId'
+					render={({field}) => (
+						<FormItem className='flex flex-col'>
+							<FormLabel className='block mb-2'>Select Category</FormLabel>
+							<Popover>
+								<PopoverTrigger asChild>
+									<FormControl>
+										<Button
+											variant='outline'
+											role='combobox'
+											className={cn(
+												'w-full justify-between border-primary/20 focus-visible:ring-primary focus-visible:ring-2 focus-visible:ring-offset-2 bg-transparent',
+												!field.value && 'text-muted-foreground'
+											)}>
+											{field.value ? categories.find((cat) => cat === field.value) : 'Select Category'}
+											<ChevronsUpDown className='opacity-50' />
+										</Button>
+									</FormControl>
+								</PopoverTrigger>
+								<PopoverContent className='w-[200px] md:w-[400px] p-0'>
+									<Command>
+										<CommandInput placeholder='Search category...' className='h-9' />
+										<CommandList>
+											<CommandEmpty>No category found.</CommandEmpty>
+											<CommandGroup>
+												{categories.map((cat) => (
+													<CommandItem
+														value={cat}
+														key={cat}
+														onSelect={() => {
+															form.setValue('categoryId', cat);
+															// Fill form with selected prospect data
+														}}>
+														{cat}
+														<Check className={cn('ml-auto', cat === field.value ? 'opacity-100' : 'opacity-0')} />
+													</CommandItem>
+												))}
+											</CommandGroup>
+										</CommandList>
+									</Command>
+								</PopoverContent>
+							</Popover>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
 
 				<FormField
 					name='content'
@@ -173,7 +151,7 @@ const EditJournalForm = () => {
 								<Textarea
 									id='content'
 									placeholder='Write your thoughts, feelings, and experiences...'
-									className='min-h-[200px] border-primary/20 focus-visible:ring-primary resize-none'
+									className='min-h-[200px] max-h-[210px] border-primary/20 focus-visible:ring-primary resize-none'
 									{...field}
 								/>
 							</FormControl>
@@ -181,6 +159,9 @@ const EditJournalForm = () => {
 						</FormItem>
 					)}
 				/>
+				<Button size='lg' className='rounded-lg px-6 py-2' type='submit'>
+					Update Entry
+				</Button>
 			</form>
 		</Form>
 	);

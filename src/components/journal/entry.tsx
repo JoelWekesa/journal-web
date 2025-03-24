@@ -1,9 +1,9 @@
 import React, {FC} from 'react';
 import {Card, CardContent, CardHeader, CardTitle} from '../ui/card';
-import {Journal} from '@/atoms/journal';
 import {CalendarIcon, Pencil, Trash2} from 'lucide-react';
 import {format} from 'date-fns';
 import {Button} from '../ui/button';
+import {Journal} from '@/models/journal';
 
 interface Props {
 	entry: Journal;
@@ -22,10 +22,10 @@ const JournalEntryComponent: FC<Props> = ({entry, handleDeleteEntry, startEditin
 						<div className='flex items-center gap-3 mt-2'>
 							<span className='text-sm text-muted-foreground flex items-center'>
 								<CalendarIcon className='mr-1 h-3 w-3' />
-								{format(entry.date, 'MMMM d, yyyy')}
+								{format(entry.createdAt, 'MMMM d, yyyy')}
 							</span>
-							<span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium `}>
-								{entry.category}
+							<span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize`}>
+								{entry.category.name}
 							</span>
 						</div>
 					</div>
@@ -43,7 +43,7 @@ const JournalEntryComponent: FC<Props> = ({entry, handleDeleteEntry, startEditin
 							size='icon'
 							className='rounded-full h-8 w-8 text-muted-foreground hover:text-destructive'
 							onClick={() => handleDeleteEntry(entry.id)}>
-							<Trash2 className='h-4 w-4' />
+							<Trash2 className='h-4 w-4' color='red' />
 							<span className='sr-only'>Delete</span>
 						</Button>
 					</div>

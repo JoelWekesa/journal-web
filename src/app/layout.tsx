@@ -3,6 +3,7 @@ import {Geist, Geist_Mono} from 'next/font/google';
 import './globals.css';
 import {NuqsAdapter} from 'nuqs/adapters/next/app';
 import NextAuthProvider from '@/providers/next-auth';
+import TanstackProviders from '@/providers/react-query';
 
 const geistSans = Geist({
 	variable: '--font-geist-sans',
@@ -28,7 +29,9 @@ export default function RootLayout({
 		<html lang='en'>
 			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
 				<NextAuthProvider>
-					<NuqsAdapter>{children}</NuqsAdapter>
+					<TanstackProviders>
+						<NuqsAdapter>{children}</NuqsAdapter>
+					</TanstackProviders>
 				</NextAuthProvider>
 			</body>
 		</html>
