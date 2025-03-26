@@ -7,6 +7,7 @@ import {useTheme} from 'next-themes';
 import {SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem} from '../ui/sidebar';
 import {Skeleton} from '../ui/skeleton';
 import {Switch} from '../ui/switch';
+import {usePathname} from 'next/navigation';
 
 export function NavSecondary({
 	items,
@@ -25,20 +26,30 @@ export function NavSecondary({
 		setMounted(true);
 	}, []);
 
+	const pathname = usePathname();
+
 	return (
 		<SidebarGroup {...props}>
 			<SidebarGroupContent>
 				<SidebarMenu>
-					{items.map((item) => (
-						<SidebarMenuItem key={item.title}>
-							<SidebarMenuButton asChild>
-								<a href={item.url}>
-									<item.icon />
-									<span>{item.title}</span>
-								</a>
-							</SidebarMenuButton>
-						</SidebarMenuItem>
-					))}
+					{items.map((item) => {
+						const isActive = pathname === item.url;
+
+						return (
+							<SidebarMenuItem key={item.title}>
+								<SidebarMenuButton asChild>
+									<a
+										href={item.url}
+										className={`flex items-center gap-2 px-4 py-2 rounded-md ${
+											isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-primary/90 hover:text-primary-foreground'
+										}`}>
+										{item.icon && <item.icon />}
+										<span>{item.title}</span>
+									</a>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+						);
+					})}
 					<SidebarMenuItem className='group-data-[collapsible=icon]:hidden'>
 						<SidebarMenuButton asChild>
 							<label>

@@ -2,12 +2,10 @@
 
 import {
 	IconCamera,
-	IconChartBar,
 	IconDatabase,
 	IconFileAi,
 	IconFileDescription,
 	IconFileWord,
-	IconFolder,
 	IconHelp,
 	IconListDetails,
 	IconNotebook,
@@ -15,10 +13,10 @@ import {
 	IconReport,
 	IconSearch,
 	IconSettings,
-	IconUsers,
 } from '@tabler/icons-react';
 import * as React from 'react';
 
+import {useSession} from 'next-auth/react';
 import {
 	Sidebar,
 	SidebarContent,
@@ -32,7 +30,6 @@ import {NavDocuments} from './nav-documents';
 import {NavMain} from './nav-main';
 import {NavSecondary} from './nav-secondary';
 import {NavUser} from './nav-user';
-import {useSession} from 'next-auth/react';
 
 const data = {
 	user: {
@@ -47,24 +44,9 @@ const data = {
 			icon: IconNotes,
 		},
 		{
-			title: 'Lifecycle',
-			url: '#',
+			title: 'Categories',
+			url: '/journals/categories',
 			icon: IconListDetails,
-		},
-		{
-			title: 'Analytics',
-			url: '#',
-			icon: IconChartBar,
-		},
-		{
-			title: 'Projects',
-			url: '#',
-			icon: IconFolder,
-		},
-		{
-			title: 'Team',
-			url: '#',
-			icon: IconUsers,
 		},
 	],
 	navClouds: [
@@ -116,6 +98,11 @@ const data = {
 		},
 	],
 	navSecondary: [
+		{
+			title: 'Analytics',
+			url: '/analytics',
+			icon: IconReport,
+		},
 		{
 			title: 'Settings',
 			url: '#',

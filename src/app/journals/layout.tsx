@@ -2,7 +2,6 @@ import {cookies} from 'next/headers';
 
 import {SidebarInset, SidebarProvider} from '@/components/ui/sidebar';
 
-// import '@/app/(examples)/dashboard/theme.css';
 import {SiteHeader} from '@/components/nav/site-header';
 import {AppSidebar} from '@/components/nav/app-sidebar';
 

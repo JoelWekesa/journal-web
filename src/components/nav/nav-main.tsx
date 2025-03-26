@@ -13,7 +13,7 @@ export function NavMain({
 		icon?: Icon;
 	}[];
 }) {
-	const pathname = usePathname(); // Get the current path
+	const pathname = usePathname();
 
 	return (
 		<SidebarGroup>
