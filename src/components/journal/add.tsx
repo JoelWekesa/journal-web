@@ -1,21 +1,21 @@
 'use client';
 import newFormAtom from '@/atoms/new_form';
-import { cn } from '@/lib/utils';
-import { useAddJournal } from '@/services/journals/add';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useAtom } from 'jotai';
-import { Check, ChevronsUpDown } from 'lucide-react';
-import { FC } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { Button } from '../ui/button';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
-import { Input } from '../ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { Textarea } from '../ui/textarea';
-
-const categories = ['Personal', 'Work', 'Travel', 'Health', 'Cooking', 'Nature', 'Learning'];
+import {cn} from '@/lib/utils';
+import {useAddJournal} from '@/services/journals/add';
+import {zodResolver} from '@hookform/resolvers/zod';
+import {useAtom} from 'jotai';
+import {Check, ChevronsUpDown} from 'lucide-react';
+import {FC} from 'react';
+import {useForm} from 'react-hook-form';
+import {z} from 'zod';
+import {Button} from '../ui/button';
+import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from '../ui/command';
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '../ui/form';
+import {Input} from '../ui/input';
+import {Popover, PopoverContent, PopoverTrigger} from '../ui/popover';
+import {Textarea} from '../ui/textarea';
+import {Category} from '@/models/category';
+import {useCategories} from '@/services/categories/list';
 
 const validationSchema = z.object({
 	title: z.string().nonempty(),
@@ -23,7 +23,12 @@ const validationSchema = z.object({
 	content: z.string().nonempty(),
 });
 
-const AddJournalForm: FC<{token: string}> = ({token}) => {
+interface Props {
+	token: string;
+	cats: Category[];
+}
+
+const AddJournalForm: FC<Props> = ({token, cats}) => {
 	const form = useForm({
 		resolver: zodResolver(validationSchema),
 		defaultValues: {
@@ -32,6 +37,8 @@ const AddJournalForm: FC<{token: string}> = ({token}) => {
 			content: '',
 		},
 	});
+
+	const {data: categories} = useCategories({initialData: cats});
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [_, setShowNewEntryForm] = useAtom(newFormAtom);
@@ -85,10 +92,10 @@ const AddJournalForm: FC<{token: string}> = ({token}) => {
 											variant='outline'
 											role='combobox'
 											className={cn(
-												'w-full justify-between border-primary/20 focus-visible:ring-primary focus-visible:ring-2 focus-visible:ring-offset-2 bg-transparent',
+												'w-full justify-between border-primary/20 focus-visible:ring-primary focus-visible:ring-2 focus-visible:ring-offset-2 bg-transparent capitalize',
 												!field.value && 'text-muted-foreground'
 											)}>
-											{field.value ? categories.find((cat) => cat === field.value) : 'Select Category'}
+											{field.value ? categories.find(({id: cat}) => cat === field.value)?.name : 'Select Category'}
 											<ChevronsUpDown className='opacity-50' />
 										</Button>
 									</FormControl>
@@ -99,15 +106,15 @@ const AddJournalForm: FC<{token: string}> = ({token}) => {
 										<CommandList>
 											<CommandEmpty>No category found.</CommandEmpty>
 											<CommandGroup>
-												{categories.map((cat) => (
+												{categories.map(({id: cat, name}) => (
 													<CommandItem
 														value={cat}
 														key={cat}
 														onSelect={() => {
-															form.setValue('categoryId', 'cm8kiopsg0006r8r67g65zld5');
-															// Fill form with selected prospect data
-														}}>
-														{cat}
+															form.setValue('categoryId', cat);
+														}}
+														className='capitalize'>
+														{name}
 														<Check className={cn('ml-auto', cat === field.value ? 'opacity-100' : 'opacity-0')} />
 													</CommandItem>
 												))}

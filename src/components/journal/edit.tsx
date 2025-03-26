@@ -15,8 +15,13 @@ import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from '..
 import {Input} from '../ui/input';
 import {Popover, PopoverContent, PopoverTrigger} from '../ui/popover';
 import {Textarea} from '../ui/textarea';
+import {Category} from '@/models/category';
+import {useCategories} from '@/services/categories/list';
 
-const categories = ['Personal', 'Work', 'Travel', 'Health', 'Cooking', 'Nature', 'Learning'];
+interface Props {
+	token: string;
+	cats: Category[];
+}
 
 const validationSchema = z.object({
 	title: z.string().nonempty(),
@@ -24,8 +29,10 @@ const validationSchema = z.object({
 	content: z.string().nonempty(),
 });
 
-const EditJournalForm: FC<{token: string}> = ({token}) => {
+const EditJournalForm: FC<Props> = ({token, cats}) => {
 	const [journal] = useAtom(journalAtom);
+
+	const {data: categories} = useCategories({initialData: cats});
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [_, setIsEditDialogOpen] = useAtom(editFormAtom);
@@ -105,10 +112,10 @@ const EditJournalForm: FC<{token: string}> = ({token}) => {
 											variant='outline'
 											role='combobox'
 											className={cn(
-												'w-full justify-between border-primary/20 focus-visible:ring-primary focus-visible:ring-2 focus-visible:ring-offset-2 bg-transparent',
+												'w-full justify-between border-primary/20 focus-visible:ring-primary focus-visible:ring-2 focus-visible:ring-offset-2 bg-transparent capitalize',
 												!field.value && 'text-muted-foreground'
 											)}>
-											{field.value ? categories.find((cat) => cat === field.value) : 'Select Category'}
+											{field.value ? categories.find(({id: cat}) => cat === field.value)?.name : 'Select Category'}
 											<ChevronsUpDown className='opacity-50' />
 										</Button>
 									</FormControl>
@@ -119,15 +126,15 @@ const EditJournalForm: FC<{token: string}> = ({token}) => {
 										<CommandList>
 											<CommandEmpty>No category found.</CommandEmpty>
 											<CommandGroup>
-												{categories.map((cat) => (
+												{categories.map(({id: cat, name}) => (
 													<CommandItem
 														value={cat}
 														key={cat}
 														onSelect={() => {
 															form.setValue('categoryId', cat);
-															// Fill form with selected prospect data
-														}}>
-														{cat}
+														}}
+														className='capitalize'>
+														{name}
 														<Check className={cn('ml-auto', cat === field.value ? 'opacity-100' : 'opacity-0')} />
 													</CommandItem>
 												))}

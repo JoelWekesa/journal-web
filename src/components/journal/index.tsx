@@ -18,13 +18,15 @@ import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} fro
 import AddJournalForm from './add';
 import EditJournalForm from './edit';
 import {useDeleteJournal} from '@/services/journals/delete';
+import {Category} from '@/models/category';
 
 interface Props {
 	initialData: Journal[];
+	categories: Category[];
 	token: string;
 }
 
-const JournalManagement: FC<Props> = ({initialData, token}) => {
+const JournalManagement: FC<Props> = ({initialData, token, categories}) => {
 	const {data: session} = useSession({
 		required: true,
 	});
@@ -132,7 +134,7 @@ const JournalManagement: FC<Props> = ({initialData, token}) => {
 					</Button>
 				</div>
 
-				{!showNewEntryForm && entries.length <= 1 && (
+				{!showNewEntryForm && entries.length === 0 && (
 					<div className='flex justify-center mb-12'>
 						<Button
 							onClick={() => setShowNewEntryForm(true)}
@@ -150,7 +152,7 @@ const JournalManagement: FC<Props> = ({initialData, token}) => {
 							<DialogTitle className='text-2xl text-primary'>Add Journal Entry</DialogTitle>
 							<DialogDescription className='text-base'>Add your memories and thoughts</DialogDescription>
 						</DialogHeader>
-						<AddJournalForm token={token} />
+						<AddJournalForm token={token} cats={categories} />
 					</DialogContent>
 				</Dialog>
 
@@ -251,7 +253,7 @@ const JournalManagement: FC<Props> = ({initialData, token}) => {
 						<DialogTitle className='text-2xl text-primary'>Edit Journal Entry</DialogTitle>
 						<DialogDescription className='text-base'>Update your memories and thoughts</DialogDescription>
 					</DialogHeader>
-					<EditJournalForm token={token} />
+					<EditJournalForm token={token} cats={categories} />
 				</DialogContent>
 			</Dialog>
 		</div>

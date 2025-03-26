@@ -4,6 +4,7 @@ import './globals.css';
 import {NuqsAdapter} from 'nuqs/adapters/next/app';
 import NextAuthProvider from '@/providers/next-auth';
 import TanstackProviders from '@/providers/react-query';
+import {Toaster} from '@/components/ui/sonner';
 
 const geistSans = Geist({
 	variable: '--font-geist-sans',
@@ -31,6 +32,7 @@ export default function RootLayout({
 				<NextAuthProvider>
 					<TanstackProviders>
 						<NuqsAdapter>{children}</NuqsAdapter>
+						<Toaster />
 					</TanstackProviders>
 				</NextAuthProvider>
 			</body>

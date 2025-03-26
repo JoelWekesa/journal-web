@@ -3,7 +3,7 @@ import {Category} from '@/models/category';
 import {useQuery} from '@tanstack/react-query';
 import {useSession} from 'next-auth/react';
 
-const getCategories = async ({token}: {token: string}) => {
+export const getCategories = async ({token}: {token: string}) => {
 	const url = 'categories';
 
 	const client = ApiClient({token});
